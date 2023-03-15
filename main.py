@@ -141,7 +141,7 @@ def fit_model(net, epochs, device, lr):
         #     net = torch.nn.DataParallel(net)
         #     cudnn.benchmark = True
         train_acc, train_loss = train(net, epoch, device, criterion, optimizer, trainloader)
-        test_acc, test_loss = test(net, epoch, device, testloader)
+        test_acc, test_loss = test(net, epoch, device, criterion, testloader)
         scheduler.step()
 
         training_acc.append(train_acc)

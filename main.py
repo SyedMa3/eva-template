@@ -11,6 +11,8 @@ import torchvision.transforms as transforms
 import os
 import argparse
 
+from tqdm import tqdm
+
 from models import *
 # from utils import progress_bar
 
@@ -52,66 +54,81 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer',
            'dog', 'frog', 'horse', 'ship', 'truck')
 
 # Training
-def train(net, epoch, device, criterion, optimizer, trainloader):
+def train(net, epoch, device, criterion, optimizer, train_loader):
     print('\nEpoch: %d' % epoch)
+    pbar = tqdm(train_loader)
     net.train()
     train_loss = 0
     correct = 0
-    total = 0
-    for batch_idx, (inputs, targets) in enumerate(trainloader):
+    num_loops = 0
+    processed = 0
+    for batch_idx, (inputs, targets) in enumerate(train_loader):
+        num_loops += 1
+
         inputs, targets = inputs.to(device), targets.to(device)
+        
         optimizer.zero_grad()
-        outputs = net(inputs)
-        loss = criterion(outputs, targets)
+        y_pred = net(inputs)
+        
+        loss = criterion(y_pred, targets)
         loss.backward()
+        
         optimizer.step()
 
         train_loss += loss.item()
-        _, predicted = outputs.max(1)
-        total += targets.size(0)
-        correct += predicted.eq(targets).sum().item()
+        
+        pred = y_pred.argmax(dim=1, keepdim=True)
+        correct += pred.eq(targets.view_as(pred)).sum().item()
 
-        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                     % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        processed += len(inputs)
+        pbar.set_description(desc= f'Loss={loss.item()} Batch_id={batch_idx} Accuracy={100*correct/processed:0.2f}')
+
+    return 100*correct/processed, train_loss/num_loops
 
 
-def test(net, epoch, device, criterion, testloader):
-    global best_acc
+
+
+def test(net, epoch, device, criterion, test_loader):
     net.eval()
     test_loss = 0
     correct = 0
     total = 0
     with torch.no_grad():
-        for batch_idx, (inputs, targets) in enumerate(testloader):
+        for (inputs, targets) in test_loader:
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = net(inputs)
             loss = criterion(outputs, targets)
 
             test_loss += loss.item()
-            _, predicted = outputs.max(1)
-            total += targets.size(0)
-            correct += predicted.eq(targets).sum().item()
-
-            progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                         % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+            pred = outputs.argmax(dim=1, keepdim=True)
+            correct += pred.eq(targets.view_as(pred)).sum().item()
 
     # Save checkpoint.
-    acc = 100.*correct/total
-    if acc > best_acc:
-        print('Saving..')
-        state = {
-            'net': net.state_dict(),
-            'acc': acc,
-            'epoch': epoch,
-        }
-        if not os.path.isdir('checkpoint'):
-            os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/ckpt.pth')
-        best_acc = acc
+    # acc = 100.*correct/total
+    # test_loss /= len(test_loader.dataset)
+    # test_losses.append(test_loss)
+
+    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)\n'.format(
+            test_loss, correct, len(test_loader.dataset),
+            100. * correct / len(test_loader.dataset)))
+    
+    return 100. * correct / len(test_loader.dataset), test_loss
+
+    # if acc > best_acc:
+    #     print('Saving..')
+    #     state = {
+    #         'net': net.state_dict(),
+    #         'acc': acc,
+    #         'epoch': epoch,
+    #     }
+    #     if not os.path.isdir('checkpoint'):
+    #         os.mkdir('checkpoint')
+    #     torch.save(state, './checkpoint/ckpt.pth')
+    #     best_acc = acc
 
 def fit_model(net, epochs, device, lr):
 
-
+    training_acc, training_loss, testing_acc, testing_loss = list(), list(), list(), list()
     trainloader, testloader = get_dataloader()
     net = net.to(device)
     criterion = nn.CrossEntropyLoss()
@@ -123,6 +140,14 @@ def fit_model(net, epochs, device, lr):
         # if device == 'cuda':
         #     net = torch.nn.DataParallel(net)
         #     cudnn.benchmark = True
-        train(net, epoch, device, criterion, optimizer, trainloader)
-        test(net, epoch, device, testloader)
+        train_acc, train_loss = train(net, epoch, device, criterion, optimizer, trainloader)
+        test_acc, test_loss = test(net, epoch, device, testloader)
         scheduler.step()
+
+        training_acc.append(train_acc)
+        training_loss.append(train_loss)
+        testing_acc.append(test_acc)
+        testing_loss.append(test_loss)
+
+
+    return net, (training_acc, training_loss, testing_acc, testing_loss)

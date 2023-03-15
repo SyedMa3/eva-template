@@ -111,6 +111,8 @@ def test(net, epoch, device, criterion, testloader):
 
 def fit_model(net, epochs, device, lr):
 
+
+    trainloader, testloader = get_dataloader()
     net = net.to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=lr,
@@ -121,6 +123,6 @@ def fit_model(net, epochs, device, lr):
         # if device == 'cuda':
         #     net = torch.nn.DataParallel(net)
         #     cudnn.benchmark = True
-        train(net, epoch, device)
-        test(net, epoch, device)
+        train(net, epoch, device, criterion, optimizer, trainloader)
+        test(net, epoch, device, testloader)
         scheduler.step()

@@ -39,7 +39,7 @@ def train(model, device, train_loader, criterion, scheduler, optimizer):
         correct += pred.eq(targets.view_as(pred)).sum().item()
         processed += len(inputs)
 
-        pbar.set_description(desc= f'Batch_id={batch_idx} Loss={train_loss/batch_idx+1:.5f} Accuracy={100*correct/processed:0.2f}')
+        pbar.set_description(desc= f'Batch_id={batch_idx} Loss={train_loss/(batch_idx+1):.5f} Accuracy={100*correct/processed:0.2f}')
 
     return 100*correct/processed, train_loss/(batch_idx+1), lr_trend
 

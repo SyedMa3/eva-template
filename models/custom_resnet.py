@@ -30,11 +30,10 @@ class BasicBlock(nn.Module):
         #     )
 
     def forward(self, x):
-        out = self.X(x)
-        out = F.relu(self.bn1(self.conv1(x)))
+        y = self.X(x)
+        out = F.relu(self.bn1(self.conv1(y)))
         out = self.bn2(self.conv2(out))
-        out += self.X(x)
-        out = F.relu(out)
+        out += y
         return out
 
 

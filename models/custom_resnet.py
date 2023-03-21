@@ -68,6 +68,7 @@ class CustomResNet(nn.Module):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.layer1(out)
         out = self.layer2(out)
+        self.in_planes = 256
         out = self.layer3(out)
         out = F.max_pool2d(out, 4)
         out = out.view(out.size(0), -1)
@@ -77,7 +78,7 @@ class CustomResNet(nn.Module):
 
 
 def MakeResNet():
-    return CustomResNet(BasicBlock, [1, 0, 1])
+    return CustomResNet(BasicBlock, [1, 1, 1])
 
 
 def test():

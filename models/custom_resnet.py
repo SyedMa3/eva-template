@@ -74,7 +74,7 @@ def MakeResNet():
 
 
 def test():
-    net = CustomResNet()
+    net = MakeResNet()
     y = net(torch.randn(1, 3, 32, 32))
     print(y.size())
 

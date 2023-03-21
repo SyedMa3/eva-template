@@ -16,7 +16,8 @@ class BasicBlock(nn.Module):
         self.bn2 = nn.BatchNorm2d(planes)
 
         self.X = nn.Sequential(
-            nn.Conv2d(in_planes, planes, 3),
+            nn.Conv2d(in_planes, planes, kernel_size=3,
+                    stride=1, padding=1, bias=False),
             nn.MaxPool2d(2,2),
             nn.BatchNorm2d(planes),
             nn.ReLU(),
@@ -46,7 +47,8 @@ class CustomResNet(nn.Module):
         self.bn1 = nn.BatchNorm2d(64)
         self.layer1 = self._make_layer(block, 128, num_blocks[0], stride=1)
         self.layer2 = nn.Sequential(
-            nn.Conv2d(128, 256, 3),
+            nn.Conv2d(128, 256, kernel_size=3,
+                    stride=1, padding=1, bias=False),
             nn.MaxPool2d(2,2),
             nn.BatchNorm2d(256),
             nn.ReLU(),

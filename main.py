@@ -91,15 +91,21 @@ def fit_model(net, optimizer, criterion, device, NUM_EPOCHS,train_loader, test_l
 
     criterion = nn.CrossEntropyLoss()
     for epoch in range(1, NUM_EPOCHS+1):
+        print("EPOCH: {} (LR: {})".format(epoch, optimizer.param_groups[0]['lr']))
 
-        train_acc, train_loss = train(net, epoch, device, criterion, optimizer, train_loader)
+
+        train_acc, train_loss, lr_hist = train(net, epoch, device, criterion, optimizer, train_loader)
         test_acc, test_loss = test(net, epoch, device, criterion, test_loader)
-        scheduler.step()
+        
+        if scheduler:
+            if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                scheduler.step(test_loss)
 
         training_acc.append(train_acc)
         training_loss.append(train_loss)
         testing_acc.append(test_acc)
         testing_loss.append(test_loss)
+        lr_trend.extend(lr_hist)
 
     if scheduler:
         return net, (training_acc, training_loss, testing_acc, testing_loss, lr_trend)

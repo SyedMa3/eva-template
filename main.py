@@ -2,12 +2,9 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torchvision
 import torchvision.transforms as transforms
 from tqdm import tqdm
-import random
 
-from utils import train_transform, test_transform
 
 # Training
 def train(model, device, train_loader, criterion, scheduler, optimizer):

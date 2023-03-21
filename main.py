@@ -90,9 +90,8 @@ def fit_model(net, optimizer, criterion, device, NUM_EPOCHS,train_loader, test_l
     for epoch in range(1, NUM_EPOCHS+1):
         print("EPOCH: {} (LR: {})".format(epoch, optimizer.param_groups[0]['lr']))
 
-
-        train_acc, train_loss, lr_hist = train(net, epoch, device, criterion, optimizer, train_loader)
-        test_acc, test_loss = test(net, epoch, device, criterion, test_loader)
+        train_acc, train_loss, lr_hist = train(net, device, train_loader, criterion, scheduler, optimizer)
+        test_acc, test_loss = test(net, device, test_loader, criterion)
         
         if scheduler:
             if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):

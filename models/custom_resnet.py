@@ -53,6 +53,7 @@ class CustomResNet(nn.Module):
             nn.BatchNorm2d(256),
             nn.ReLU(),
         )
+        self.in_planes = 256
         self.layer3 = self._make_layer(block, 512, num_blocks[2], stride=1)
         self.linear = nn.Linear(512*block.expansion, num_classes)
 
@@ -68,7 +69,6 @@ class CustomResNet(nn.Module):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.layer1(out)
         out = self.layer2(out)
-        self.in_planes = 256
         out = self.layer3(out)
         out = F.max_pool2d(out, 4)
         out = out.view(out.size(0), -1)

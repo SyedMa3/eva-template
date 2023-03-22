@@ -86,7 +86,6 @@ def fit_model(net, optimizer, criterion, device, NUM_EPOCHS,train_loader, test_l
     training_acc, training_loss, testing_acc, testing_loss = list(), list(), list(), list()
     lr_trend= []
 
-    criterion = nn.CrossEntropyLoss()
     for epoch in range(1, NUM_EPOCHS+1):
         print("EPOCH: {} (LR: {})".format(epoch, optimizer.param_groups[0]['lr']))
 

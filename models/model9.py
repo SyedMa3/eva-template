@@ -63,8 +63,11 @@ class UltimusBlock(nn.Module):
     def forward(self, x):
 
         XK = self.k(x)
+        XK = XK.view(XK.size(0), 1, -1)
         XQ = self.q(x)
+        XQ = XQ.view(XQ.size(0), -1, 1)
         XV = self.v(x)
+        XV = XV.view(XV.size(0), 1, -1)
 
         AM = self.amul(XQ, XK)
 
